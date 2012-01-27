@@ -85,10 +85,8 @@ function httpbl_check() {
 	
 	// IP to test
 	$ip = $_SERVER['REMOTE_ADDR'];
-	
-	
-	$apikey = 'efufkqhkfjhs';
-$ip = "173.44.37.234";
+    // IP de test
+    //$ip = "173.44.37.234";
 	
 
 	$lookup = $apikey . '.' . implode('.', array_reverse(explode ('.', $ip ))) . '.dnsbl.httpbl.org';
