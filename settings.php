@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
  
 /**
- * Version file
+ * Add page to admin menu
  *
  * @package    local
  * @subpackage projecthoneypot
@@ -24,9 +24,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2012020800;
-$plugin->release = '0.2 (Build: 2012020800)';
-$plugin->cron = 0;
-$plugin->requires = 2010112400;
-$plugin->component = 'local_projecthoneypot';
-$plugin->maturity =  MATURITY_ALPHA;
+defined('MOODLE_INTERNAL') || die;
+
+if ($hassiteconfig) { // needs this condition or there is error on login page
+    $ADMIN->add('security', new admin_externalpage('local_projecthoneypot',
+            get_string('pluginname', 'local_projecthoneypot'),
+            new moodle_url('/local/projecthoneypot/index.php')));
+}

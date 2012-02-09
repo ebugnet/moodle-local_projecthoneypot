@@ -15,13 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Question engine upgrade helper langauge strings.
+ * This file is used to setting the plugin allover the site
  *
  * @package    local
- * @subpackage qeupgradehelper
- * @copyright  2010 The Open University
+ * @subpackage projecthoneypot
+ * @copyright  2012 Éric Bugnet
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['pluginname'] = 'Project Honey Pot';
-
+$string['hpurl'] = 'QuickLink';
+$string['hpurl_help'] = 'Get a quicklink for your site on the ProjectHoneyPot site : <a href="http://www.projecthoneypot.org/manage_quicklink.php" target="_blank">Manage QuickLink</a>.';
+$string['apikey'] = 'Apikey';
+$string['apikey_help'] = 'Get your personnal apikey for your site on the ProjectHoneyPot site : <a href="http://www.projecthoneypot.org/httpbl_configure.php" target="_blank">Manage http:BL Access Key</a>.';
+$string['log_help'] = ' This plugin log blocked IP by ProjectHoneyPot in moodle, but does it also log IP that using manual cookie to bypass blocking ?';
+$string['link_help'] = ' Active invisibles honey pot links to help tracking bad IP. More informations <a href="http://www.projecthoneypot.org/faq.php#f" target="_blank">here</a>.';

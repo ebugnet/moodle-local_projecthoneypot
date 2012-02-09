@@ -15,49 +15,45 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  
 
- 
- 
- // Include link to URL
-$hpurl = 'http://www.sendcard.org/imperfectworm.php?mod=386';
+// Include link to trapping URL
+if (get_config('local_projecthoneypot', 'link')==1) {
+    $hpurl = get_config('local_projecthoneypot', 'hpurl');
 
-switch (rand(0, 8)) {
-    case 0:
-        echo '<a href="'.$hpurl.'"><!-- merit-manor --></a>';
-        break;
-    case 1:
-        echo '<a href="'.$hpurl.'"><img src="merit-manor.gif" height="1" width="1" border="0"></a>';
-        break;
-    case 2:
-        echo '<a href="'.$hpurl.'" style="display: none;">merit-manor</a>';
-        break;
-    case 3:
-        echo '<div style="display: none;"><a href="'.$hpurl.'">merit-manor</a></div>';
-        break;
-    case 4:
-        echo '<a href="'.$hpurl.'"></a>';
-        break;
-    case 5:
-        echo '<!-- <a href="'.$hpurl.'">merit-manor</a> -->';
-        break;
-    case 6:
-        echo '<div style="position: absolute; top: -250px; left: -250px;"><a href="'.$hpurl.'">merit-manor</a></div>';
-        break;
-    case 7:
-        echo '<a href="'.$hpurl.'"><span style="display: none;">merit-manor</span></a>';
-        break;
-    case 8:
-        echo '<a href="'.$hpurl.'"><div style="height: 0px; width: 0px;"></div></a>';
-        break;
+    switch (rand(0, 8)) {
+        case 0:
+            echo '<a href="'.$hpurl.'"><!-- merit-manor --></a>';
+            break;
+        case 1:
+            echo '<a href="'.$hpurl.'"><img src="merit-manor.gif" height="1" width="1" border="0"></a>';
+            break;
+        case 2:
+            echo '<a href="'.$hpurl.'" style="display: none;">merit-manor</a>';
+            break;
+        case 3:
+            echo '<div style="display: none;"><a href="'.$hpurl.'">merit-manor</a></div>';
+            break;
+        case 4:
+            echo '<a href="'.$hpurl.'"></a>';
+            break;
+        case 5:
+            echo '<!-- <a href="'.$hpurl.'">merit-manor</a> -->';
+            break;
+        case 6:
+            echo '<div style="position: absolute; top: -250px; left: -250px;"><a href="'.$hpurl.'">merit-manor</a></div>';
+            break;
+        case 7:
+            echo '<a href="'.$hpurl.'"><span style="display: none;">merit-manor</span></a>';
+            break;
+        case 8:
+            echo '<a href="'.$hpurl.'"><div style="height: 0px; width: 0px;"></div></a>';
+            break;
+    }
 }
-
 
 
 
 // Checking access
 // using this : http://planetozh.com/blog/my-projects/honey-pot-httpbl-simple-php-script/
-
-
-
 
 /*
 Script Name: Simple PHP http:BL implementation
@@ -68,30 +64,33 @@ Version: 1.0
 Author URI: http://planetozh.com/
 */
 
-/*** EDIT LINE 22 WITH YOUR OWN HTTP:BL ACCESS KEY ! ***/
 
-if ($_COOKIE['notabot']) {
-	//httpbl_logme(false,	$_SERVER['REMOTE_ADDR']);
-	//add_to_log($courseid, $module, $action, $url='', $info='', $cm=0, $user=0)
-	////httpbl_check();
+global $CFG, $USER, $COURSE;
+if (@$_COOKIE['notaabot']) {
+	// loggin activity : allowed with a cookie
+	if (get_config('local_projecthoneypot', 'log')==1) {
+	    $info = 'IP '.$_SERVER['REMOTE_ADDR'].' allowed by cookie. User agent : '.$_SERVER["HTTP_USER_AGENT"];
+	    add_to_log($COURSE->id, 'projecthoneypot', 'pass', $_SERVER['REQUEST_URI'], $info, $cm=0, $USER->id);
+	}
 } else {
 	httpbl_check();
 }
 
 
-function httpbl_check() {	
-	// your http:BL key 
-	$apikey = 'abcdefghijkl';
-	
-	// IP to test
+function httpbl_check() {
+    global $CFG, $USER, $COURSE;    
+
+    $hpurl = get_config('local_projecthoneypot', 'hpurl');
+    $apikey = get_config('local_projecthoneypot', 'apikey');
 	$ip = $_SERVER['REMOTE_ADDR'];
-    // IP de test
-    //$ip = "173.44.37.234";
-	
+
+    if (@$_GET['check_projecthoneypot']) {
+        $ip = "118.39.80.201"; // Bad IP for testing
+    }
 
 	$lookup = $apikey . '.' . implode('.', array_reverse(explode ('.', $ip ))) . '.dnsbl.httpbl.org';
 	$result = explode( '.', gethostbyname($lookup));
-	
+
 	if ($result[0] == 127) {
 		$activity = $result[1];
 		$threat = $result[2];
@@ -113,8 +112,10 @@ function httpbl_check() {
 		}
 		
 		if ($block) {
-			//httpbl_logme($block,$ip,$type,$threat,$activity);
-			//add_to_log($courseid, $module, $action, $url='', $info='', $cm=0, $user=0)
+			// loggin activity
+			$info = 'Suspect IP '.$ip.' blocked : '.$typemeaning.' ('.$threat.'%) - Activity : '.$activity.' - User agent : '.$_SERVER["HTTP_USER_AGENT"];
+			add_to_log($COURSE->id, 'projecthoneypot', 'block', $_SERVER['REQUEST_URI'], $info, $cm=0, $USER->id);
+			// blocking IP
 			httpbl_blockme();
 			die();
 		}
@@ -123,30 +124,20 @@ function httpbl_check() {
 }
 
 
-function httpbl_logme($block = false, $ip='', $type='',$threat='',$activity='') {
-global $CFG; 
-	$log = fopen($CFG->dirroot.'/local/projecthoneypot/block.log','a');
-	$stamp = date('Y-m-d :: H-i-s');
-	
-	// Some stuff you could log for further analysis
-	$page = $_SERVER['REQUEST_URI'];
-	$ua = $_SERVER["HTTP_USER_AGENT"];
-		
-	if ($block) {
-		fputs($log,"$stamp :: BLOCKED $ip :: $type :: $threat :: $activity :: $page :: $ua\n");
-	} else {
-		fputs($log,"$stamp :: UNBLCKD $ip :: $page :: $ua\n");
-	}
-	fclose($log);
-}
+
+
 
 
 function httpbl_blockme() {
-	header('HTTP/1.0 403 Forbidden');
-	echo <<<HTML
+    global $CFG;
+    $hpurl = get_config('local_projecthoneypot', 'hpurl');
+    
+    header('HTTP/1.0 403 Forbidden');
+
+	echo 'HTML
 	<script type="text/javascript">
 	function setcookie( name, value, expires, path, domain, secure ) {
-		// set time, it's in milliseconds
+		// set time, it\'s in milliseconds
 		var today = new Date();
 		today.setTime( today.getTime() );
 	
@@ -162,33 +153,15 @@ function httpbl_blockme() {
 		( ( secure ) ? ";secure" : "" );
 	}	
 	function letmein() {
-		setcookie('notabot','true',1,'/', '', '');
+		setcookie(\'notabot\',\'true\',1,\'/\', \'\', \'\');
 		location.reload(true);
 	}
 	</script>
 	<h1>Forbidden</h1>
 	<p>Sorry. You are using a suspicious IP.</p>
 	<p>If you <strong>ARE NOT</strong> a bot of any kind, please <a href="javascript:letmein()">click here</a> to access the page. Sorry for this !</p>
-	<p>Otherwise, please have fun with <a href="http://planetozh.com/smelly.php">this page</a></p>
-HTML;
+	<p>Otherwise, please have fun with <a href="'.$hpurl.'">this page</a></p>
+HTML';
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
